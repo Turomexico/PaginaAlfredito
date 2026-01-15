@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Travel Experiences | Premium Tour Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #d4af37;
+            --accent: #2d3748;
+            --light: #f7fafc;
+            --dark: #2d3748;
+            --text: #4a5568;
+            --success: #38a169;
+            --error: #e53e3e;
+            --font-main: 'Montserrat', sans-serif;
+            --font-heading: 'Playfair Display', serif;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            color: var(--secondary);
+            margin-right: 10px;
+            font-size: 32px;
+        }
+
+        .logo span {
+            color: var(--secondary);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            left: 0;
+            bottom: -5px;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .language-switcher {
+            margin-left: 30px;
+        }
+
+        .lang-btn {
+            background: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .lang-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.9)), url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 180px 0 100px;
+            text-align: center;
+            margin-top: 70px;
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: var(--primary);
+            padding: 15px 40px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            background-color: #e6c158;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Services Section */
+        .section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .service-content {
+            padding: 25px;
+        }
+
+        .service-content h3 {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .service-content p {
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .service-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .price span {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: normal;
+        }
+
+        .book-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .book-btn:hover {
+            background-color: #2d4a7c;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            background-color: #f8f9fa;
+        }
+
+        .testimonials-slider {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin: 0 20px;
+        }
+
+        .client-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            border: 4px solid var(--secondary);
+        }
+
+        .client-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .client-location {
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .rating {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        /* Booking Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: var(--radius);
+            padding: 40px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: var(--radius);
+            font-family: var(--font-main);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .service-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .service-option {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .service-option input {
+            display: none;
+        }
+
+        .service-option label {
+            display: block;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .service-option input:checked + label {
+            border-color: var(--secondary);
+            background-color: rgba(212, 175, 55, 0.1);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .payment-method {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .payment-method.active {
+            border-color: var(--primary);
+            background-color: rgba(26, 54, 93, 0.05);
+        }
+
+        .payment-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-logo {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo span {
+            color: var(--secondary);
+        }
+
+        .footer-links h4, .footer-contact h4 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-icon:hover {
+            background-color: var(--secondary);
+            color: var(--primary);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e0;
+            font-size: 14px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 40px;
+            }
+            
+            .section {
+                padding: 80px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 0;
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: var(--transition);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .nav-links li {
+                margin: 15px 0;
+            }
+
+            .language-switcher {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+
+            .hero {
+                padding: 150px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title h2 {
+                font-size: 28px;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+            
+            .service-options, .payment-methods {
+                flex-direction: column;
+            }
+            
+            .price {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-crown logo-icon"></i>
+                    Luxury<span>Travel</span>
+                </a>
+                
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#home" class="nav-link">Inicio</a></li>
+                    <li><a href="#services" class="nav-link">Servicios</a></li>
+                    <li><a href="#about" class="nav-link">Nosotros</a></li>
+                    <li><a href="#testimonials" class="nav-link">Testimonios</a></li>
+                    <li><a href="#contact" class="nav-link">Contacto</a></li>
+                    
+                    <div class="language-switcher">
+                        <button class="lang-btn active" data-lang="es">ES</button>
+                        <button class="lang-btn" data-lang="en">EN</button>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1 class="hero-title" data-es="Experiencias de Viaje Exclusivas" data-en="Exclusive Travel Experiences">Experiencias de Viaje Exclusivas</h1>
+            <p class="hero-subtitle" data-es="Servicios premium de guía turístico para viajeros exigentes. Personaliza tu experiencia según tus necesidades." data-en="Premium tour guide services for discerning travelers. Customize your experience according to your needs.">
+                Servicios premium de guía turístico para viajeros exigentes. Personaliza tu experiencia según tus necesidades.
+            </p>
+            <a href="#services" class="cta-button" data-es="Explorar Servicios" data-en="Explore Services">Explorar Servicios</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-es="Nuestros Servicios" data-en="Our Services">Nuestros Servicios</h2>
+                <p data-es="Ofrecemos experiencias personalizadas para viajeros que buscan lo mejor. Elige solo lo que necesitas." data-en="We offer personalized experiences for travelers looking for the best. Choose only what you need.">
+                    Ofrecemos experiencias personalizadas para viajeros que buscan lo mejor. Elige solo lo que necesitas.
+                </p>
+            </div>
+            
+            <div class="services-grid" id="servicesGrid">
+                <!-- Los servicios se cargarán dinámicamente desde Supabase -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-es="Lo Que Dicen Nuestros Clientes" data-en="What Our Clients Say">Lo Que Dicen Nuestros Clientes</h2>
+                <p data-es="Experiencias reales de viajeros que han disfrutado de nuestros servicios premium." data-en="Real experiences from travelers who have enjoyed our premium services.">
+                    Experiencias reales de viajeros que han disfrutado de nuestros servicios premium.
+                </p>
+            </div>
+            
+            <div class="testimonials-slider">
+                <div class="testimonial">
+                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Client" class="client-photo">
+                    <h4 class="client-name">Sarah Johnson</h4>
+                    <p class="client-location" data-es="Nueva York, USA" data-en="New York, USA">Nueva York, USA</p>
+                    <div class="rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text" data-es="Excelente servicio. Nuestro guía era muy conocedor y nos mostró lugares increíbles que no están en las guías turísticas típicas." data-en="Excellent service. Our guide was very knowledgeable and showed us incredible places that are not in typical tourist guides.">
+                        Excelente servicio. Nuestro guía era muy conocedor y nos mostró lugares increíbles que no están en las guías turísticas típicas.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-es="Por Qué Elegirnos" data-en="Why Choose Us">Por Qué Elegirnos</h2>
+            </div>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-content">
+                        <i class="fas fa-user-tie" style="font-size: 40px; color: var(--secondary); margin-bottom: 20px;"></i>
+                        <h3 data-es="Guías Expertos" data-en="Expert Guides">Guías Expertos</h3>
+                        <p data-es="Nuestros guías son profesionales certificados con amplio conocimiento histórico, cultural y de idiomas." data-en="Our guides are certified professionals with extensive historical, cultural and language knowledge.">
+                            Nuestros guías son profesionales certificados con amplio conocimiento histórico, cultural y de idiomas.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-content">
+                        <i class="fas fa-cogs" style="font-size: 40px; color: var(--secondary); margin-bottom: 20px;"></i>
+                        <h3 data-es="Servicio Flexible" data-en="Flexible Service">Servicio Flexible</h3>
+                        <p data-es="Elige solo los servicios que necesitas: solo guía, transporte incluido, o combinaciones personalizadas." data-en="Choose only the services you need: guide only, transportation included, or custom combinations.">
+                            Elige solo los servicios que necesitas: solo guía, transporte incluido, o combinaciones personalizadas.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-content">
+                        <i class="fas fa-globe-americas" style="font-size: 40px; color: var(--secondary); margin-bottom: 20px;"></i>
+                        <h3 data-es="Multilingüe" data-en="Multilingual">Multilingüe</h3>
+                        <p data-es="Servicios disponibles en español, inglés y otros idiomas. Contenido del sitio en español e inglés." data-en="Services available in Spanish, English and other languages. Site content in Spanish and English.">
+                            Servicios disponibles en español, inglés y otros idiomas. Contenido del sitio en español e inglés.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h3 data-es="Reserva Tu Experiencia" data-en="Book Your Experience">Reserva Tu Experiencia</h3>
+            
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="serviceName" data-es="Servicio Seleccionado" data-en="Selected Service">Servicio Seleccionado</label>
+                    <input type="text" id="serviceName" class="form-control" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label data-es="Opciones de Servicio" data-en="Service Options">Opciones de Servicio</label>
+                    <div class="service-options">
+                        <div class="service-option">
+                            <input type="radio" id="guideOnly" name="serviceOption" value="guideOnly" checked>
+                            <label for="guideOnly" data-es="Solo Guía" data-en="Guide Only">Solo Guía</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="withTransport" name="serviceOption" value="withTransport">
+                            <label for="withTransport" data-es="Con Transporte" data-en="With Transportation">Con Transporte</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="pickupOnly" name="serviceOption" value="pickupOnly">
+                            <label for="pickupOnly" data-es="Solo Pickup" data-en="Pickup Only">Solo Pickup</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingDate" data-es="Fecha del Servicio" data-en="Service Date">Fecha del Servicio</label>
+                    <input type="date" id="bookingDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guests" data-es="Número de Personas" data-en="Number of Guests">Número de Personas</label>
+                    <input type="number" id="guests" class="form-control" min="1" max="10" value="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="language" data-es="Idioma del Guía" data-en="Guide Language">Idioma del Guía</label>
+                    <select id="language" class="form-control" required>
+                        <option value="spanish" data-es="Español" data-en="Spanish">Español</option>
+                        <option value="english" data-es="Inglés" data-en="English">Inglés</option>
+                        <option value="both" data-es="Español e Inglés" data-en="Spanish and English">Español e Inglés</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerName" data-es="Nombre Completo" data-en="Full Name">Nombre Completo</label>
+                    <input type="text" id="customerName" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerEmail" data-es="Correo Electrónico" data-en="Email Address">Correo Electrónico</label>
+                    <input type="email" id="customerEmail" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone" data-es="Teléfono" data-en="Phone Number">Teléfono</label>
+                    <input type="tel" id="customerPhone" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label data-es="Método de Pago" data-en="Payment Method">Método de Pago</label>
+                    <div class="payment-methods">
+                        <div class="payment-method" data-method="cash">
+                            <i class="fas fa-money-bill-wave payment-icon"></i>
+                            <p data-es="Efectivo (USD/MXN)" data-en="Cash (USD/MXN)">Efectivo (USD/MXN)</p>
+                        </div>
+                        <div class="payment-method" data-method="transfer">
+                            <i class="fas fa-university payment-icon"></i>
+                            <p data-es="Transferencia" data-en="Bank Transfer">Transferencia</p>
+                        </div>
+                        <div class="payment-method" data-method="card">
+                            <i class="fas fa-credit-card payment-icon"></i>
+                            <p data-es="Tarjeta" data-en="Credit Card">Tarjeta</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="paymentMethod" value="cash" required>
+                </div>
+                
+                <div class="form-group">
+                    <label data-es="Total a Pagar" data-en="Total to Pay">Total a Pagar</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 id="totalPrice" style="color: var(--secondary);">$0 USD</h3>
+                        <span id="totalMxn" style="color: var(--text);">/ $0 MXN</span>
+                    </div>
+                </div>
+                
+                <button type="submit" class="cta-button" style="width: 100%;" data-es="Confirmar Reserva" data-en="Confirm Booking">Confirmar Reserva</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">Luxury<span>Travel</span></div>
+                    <p data-es="Servicios premium de guía turístico para viajeros exigentes. Experiencias personalizadas y flexibles." data-en="Premium tour guide services for discerning travelers. Personalized and flexible experiences.">
+                        Servicios premium de guía turístico para viajeros exigentes. Experiencias personalizadas y flexibles.
+                    </p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <h4 data-es="Enlaces Rápidos" data-en="Quick Links">Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#home" data-es="Inicio" data-en="Home">Inicio</a></li>
+                        <li><a href="#services" data-es="Servicios" data-en="Services">Servicios</a></li>
+                        <li><a href="#about" data-es="Nosotros" data-en="About">Nosotros</a></li>
+                        <li><a href="#testimonials" data-es="Testimonios" data-en="Testimonials">Testimonios</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4 data-es="Contacto" data-en="Contact">Contacto</h4>
+                    <p><i class="fas fa-phone"></i> +52 123 456 7890</p>
+                    <p><i class="fas fa-envelope"></i> info@luxurytravel.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> <span data-es="Ciudad de México, México" data-en="Mexico City, Mexico">Ciudad de México, México</span></p>
+                    
+                    <h4 style="margin-top: 20px;" data-es="Métodos de Pago" data-en="Payment Methods">Métodos de Pago</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <i class="fab fa-cc-visa" style="font-size: 30px; color: #cbd5e0;"></i>
+                        <i class="fab fa-cc-mastercard" style="font-size: 30px; color: #cbd5e0;"></i>
+                        <i class="fab fa-cc-amex" style="font-size: 30px; color: #cbd5e0;"></i>
+                        <i class="fas fa-university" style="font-size: 30px; color: #cbd5e0;"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; <span id="currentYear"></span> Luxury Travel Experiences. <span data-es="Todos los derechos reservados." data-en="All rights reserved.">Todos los derechos reservados.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuración inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar año actual
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Inicializar Supabase (reemplaza con tus credenciales)
+            const supabaseUrl = 'https://your-project.supabase.co';
+            const supabaseKey = 'your-anon-key';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // Datos de ejemplo para servicios (normalmente vendrían de Supabase)
+            const sampleServices = [
+                {
+                    id: 1,
+                    name_es: "Tour Histórico Ciudad",
+                    name_en: "City Historical Tour",
+                    description_es: "Recorrido por los sitios históricos más importantes de la ciudad con guía especializado.",
+                    description_en: "Tour of the most important historical sites in the city with a specialized guide.",
+                    duration: "4 horas",
+                    price_usd: 120,
+                    price_mxn: 2400,
+                    image: "https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                },
+                {
+                    id: 2,
+                    name_es: "Aventura en la Naturaleza",
+                    name_en: "Nature Adventure",
+                    description_es: "Exploración de paisajes naturales, cascadas y vida silvestre con guía experto.",
+                    description_en: "Exploration of natural landscapes, waterfalls and wildlife with expert guide.",
+                    duration: "6-8 horas",
+                    price_usd: 180,
+                    price_mxn: 3600,
+                    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80"
+                },
+                {
+                    id: 3,
+                    name_es: "Experiencia Gastronómica",
+                    name_en: "Gastronomic Experience",
+                    description_es: "Tour culinario por los mejores restaurantes y mercados locales con degustaciones.",
+                    description_en: "Culinary tour of the best restaurants and local markets with tastings.",
+                    duration: "3-4 horas",
+                    price_usd: 95,
+                    price_mxn: 1900,
+                    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80"
+                }
+            ];
+            
+            // Cargar servicios en la página
+            loadServices(sampleServices);
+            
+            // Configurar navegación móvil
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+                mobileMenuBtn.innerHTML = navLinks.classList.contains('active') 
+                    ? '<i class="fas fa-times"></i>' 
+                    : '<i class="fas fa-bars"></i>';
+            });
+            
+            // Cerrar menú al hacer clic en un enlace
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+            
+            // Configurar cambio de idioma
+            const langButtons = document.querySelectorAll('.lang-btn');
+            let currentLang = 'es';
+            
+            langButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    changeLanguage(lang);
+                    
+                    langButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Configurar modal de reserva
+            const bookingModal = document.getElementById('bookingModal');
+            const closeModal = document.getElementById('closeModal');
+            const bookButtons = document.querySelectorAll('.book-btn');
+            const serviceNameInput = document.getElementById('serviceName');
+            const totalPriceElement = document.getElementById('totalPrice');
+            const totalMxnElement = document.getElementById('totalMxn');
+            const serviceOptions = document.querySelectorAll('input[name="serviceOption"]');
+            const guestsInput = document.getElementById('guests');
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            const paymentMethodInput = document.getElementById('paymentMethod');
+            
+            let currentServicePrice = 0;
+            let currentServiceMxn = 0;
+            
+            // Abrir modal al hacer clic en reservar
+            bookButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const serviceId = this.getAttribute('data-service-id');
+                    const service = sampleServices.find(s => s.id == serviceId);
+                    
+                    if (service) {
+                        const isEnglish = currentLang === 'en';
+                        serviceNameInput.value = isEnglish ? service.name_en : service.name_es;
+                        currentServicePrice = service.price_usd;
+                        currentServiceMxn = service.price_mxn;
+                        
+                        updateTotalPrice();
+                        bookingModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    }
+                });
+            });
+            
+            // Cerrar modal
+            closeModal.addEventListener('click', function() {
+                bookingModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            window.addEventListener('click', function(event) {
+                if (event.target === bookingModal) {
+                    bookingModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            // Actualizar precio total cuando cambian las opciones
+            serviceOptions.forEach(option => {
+                option.addEventListener('change', updateTotalPrice);
+            });
+            
+            guestsInput.addEventListener('input', updateTotalPrice);
+            
+            // Configurar métodos de pago
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    const methodType = this.getAttribute('data-method');
+                    
+                    paymentMethods.forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                    paymentMethodInput.value = methodType;
+                });
+            });
+            
+            // Manejar envío del formulario
+            const bookingForm = document.getElementById('bookingForm');
+            bookingForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Aquí integrarías con Supabase para guardar la reserva
+                const bookingData = {
+                    service: serviceNameInput.value,
+                    serviceOption: document.querySelector('input[name="serviceOption"]:checked').value,
+                    date: document.getElementById('bookingDate').value,
+                    guests: document.getElementById('guests').value,
+                    language: document.getElementById('language').value,
+                    customerName: document.getElementById('customerName').value,
+                    customerEmail: document.getElementById('customerEmail').value,
+                    customerPhone: document.getElementById('customerPhone').value,
+                    paymentMethod: paymentMethodInput.value,
+                    totalUSD: currentServicePrice * parseInt(guestsInput.value),
+                    totalMXN: currentServiceMxn * parseInt(guestsInput.value),
+                    status: 'pending'
+                };
+                
+                // Aquí llamarías a Supabase para guardar los datos
+                // supabase.from('bookings').insert([bookingData])
+                
+                // Mostrar confirmación
+                alert(currentLang === 'es' 
+                    ? '¡Reserva enviada con éxito! Nos pondremos en contacto pronto para confirmar los detalles.' 
+                    : 'Booking submitted successfully! We will contact you soon to confirm the details.');
+                
+                // Cerrar modal y reiniciar formulario
+                bookingModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                bookingForm.reset();
+                paymentMethods[0].click(); // Resetear a efectivo
+            });
+            
+            // Función para cargar servicios
+            function loadServices(services) {
+                const servicesGrid = document.getElementById('servicesGrid');
+                servicesGrid.innerHTML = '';
+                
+                services.forEach(service => {
+                    const isEnglish = currentLang === 'en';
+                    
+                    const serviceCard = document.createElement('div');
+                    serviceCard.className = 'service-card';
+                    serviceCard.innerHTML = `
+                        <img src="${service.image}" alt="${isEnglish ? service.name_en : service.name_es}" class="service-img">
+                        <div class="service-content">
+                            <h3>${isEnglish ? service.name_en : service.name_es}</h3>
+                            <p>${isEnglish ? service.description_en : service.description_es}</p>
+                            <p><strong>${currentLang === 'es' ? 'Duración:' : 'Duration:'}</strong> ${service.duration}</p>
+                            <div class="service-price">
+                                <div class="price">
+                                    $${service.price_usd} USD<br>
+                                    <span>$${service.price_mxn} MXN</span>
+                                </div>
+                                <button class="book-btn" data-service-id="${service.id}">
+                                    ${currentLang === 'es' ? 'Reservar' : 'Book Now'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    servicesGrid.appendChild(serviceCard);
+                });
+                
+                // Reasignar eventos a los botones de reserva
+                document.querySelectorAll('.book-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const serviceId = this.getAttribute('data-service-id');
+                        const service = sampleServices.find(s => s.id == serviceId);
+                        
+                        if (service) {
+                            const isEnglish = currentLang === 'en';
+                            serviceNameInput.value = isEnglish ? service.name_en : service.name_es;
+                            currentServicePrice = service.price_usd;
+                            currentServiceMxn = service.price_mxn;
+                            
+                            updateTotalPrice();
+                            bookingModal.style.display = 'flex';
+                            document.body.style.overflow = 'hidden';
+                        }
+                    });
+                });
+            }
+            
+            // Función para actualizar el precio total
+            function updateTotalPrice() {
+                const guests = parseInt(guestsInput.value) || 1;
+                const serviceOption = document.querySelector('input[name="serviceOption"]:checked').value;
+                
+                let multiplier = 1;
+                if (serviceOption === 'withTransport') multiplier = 1.5; // +50% por transporte
+                if (serviceOption === 'pickupOnly') multiplier = 1.2; // +20% por pickup
+                
+                const totalUSD = currentServicePrice * guests * multiplier;
+                const totalMXN = currentServiceMxn * guests * multiplier;
+                
+                totalPriceElement.textContent = `$${totalUSD.toFixed(0)} USD`;
+                totalMxnElement.textContent = `/ $${totalMXN.toFixed(0)} MXN`;
+            }
+            
+            // Función para cambiar idioma
+            function changeLanguage(lang) {
+                currentLang = lang;
+                
+                // Actualizar todos los elementos con atributos data-es y data-en
+                document.querySelectorAll('[data-es], [data-en]').forEach(element => {
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                        // Para elementos de formulario, actualizar placeholder si existe
+                        if (element.hasAttribute('placeholder')) {
+                            element.setAttribute('placeholder', element.getAttribute(`data-${lang}`));
+                        }
+                    } else {
+                        // Para otros elementos, actualizar texto
+                        element.textContent = element.getAttribute(`data-${lang}`);
+                    }
+                });
+                
+                // Recargar servicios con el nuevo idioma
+                loadServices(sampleServices);
+                
+                // Actualizar botones de reserva en el modal
+                document.querySelectorAll('.book-btn').forEach(button => {
+                    button.textContent = lang === 'es' ? 'Reservar' : 'Book Now';
+                });
+                
+                // Actualizar botón de envío del formulario
+                document.querySelector('#bookingForm button[type="submit"]').textContent = 
+                    lang === 'es' ? 'Confirmar Reserva' : 'Confirm Booking';
+            }
+            
+            // Inicializar con español
+            changeLanguage('es');
+        });
+    </script>
+</body>
+</html>
